@@ -6,7 +6,8 @@ engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
 def main():
-	books = db.execute("SELECT * FROM books WHERE year='1980'").fetchall()
+	print("get books from what year?")
+	books = db.execute("SELECT * FROM books WHERE year='1981'").fetchall()
 	print(books)
 
 
