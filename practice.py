@@ -8,11 +8,12 @@ db = scoped_session(sessionmaker(bind=engine))
 def main():
 	yearInput = 1990
 	while yearInput != "":
-		print("get books from what year?")
-		yearInput = input()
-		books = db.execute("SELECT title, author FROM books WHERE year=:yearInput", {"yearInput": yearInput}).fetchall()
-		for book in books:
-			print(book.title, "-", book.author)
+		db.execute("DROP users")
+		# print("get books from what year?")
+		# yearInput = input()
+		# books = db.execute("SELECT title, author FROM books WHERE year=:yearInput", {"yearInput": yearInput}).fetchall()
+		# for book in books:
+		# 	print(book.title, "-", book.author)
 
 
 if __name__ == "__main__":
