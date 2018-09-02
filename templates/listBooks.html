@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Books
+{% endblock %}
+
+{% block body %}
+    {% if msg %}
+    <h3>Added {{ msg }} to favorites</h3>
+    {% endif %}
+    <h1>Books from {{ year }} </h1>
+
+    <ul>
+        {% for book in books %}
+            <li>
+                <a href="{{ url_for('select_book', isbn=book.isbn, year=year) }}">
+                    {{ book.title }} - {{ book.author }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+
+{% endblock %}

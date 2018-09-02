@@ -60,7 +60,7 @@ def submitRegistration():
 	db.execute("INSERT into users (username, password, salt) VALUES (:username, :password, :salt)",
 		{"username":username, "password":hashed, "salt":salt})
 	db.commit()
-	db.userSession = username
+	db.userSession = salt
 	msg = "logged in as " + username + "db.userSession" + db.userSession
 	return render_template("success.html", message=msg)
 
@@ -83,7 +83,7 @@ def submitLogin():
 
 	if hashed_userPassword == hashed_password:
 		msg = "logged in as " + name
-		db.userSession = name
+		db.userSession = salt
 		return render_template("success.html", message=msg)
 	else:
 		return render_template("error.html", message="invalid username or password")
@@ -96,13 +96,27 @@ def searchBooks():
 	else:
 		return render_template("searchBooks.html")
 
-@app.route("/listBooks")
-def listBooks():
+@app.route("/listBooks", methods=["POST"])
+def listBooks(msg = None):
 	if db.userSession == None:
 		return render_template("error.html", message="not logged in")
 	else:
-		return render_template("listBooks.html")
+		year = request.form.get("year")
+		books = db.execute("SELECT * from books WHERE year=:year", {"year":year})
+		return render_template("listBooks.html", year=year, books=books, msg=msg)
 
+
+# @app.route("/select_book/<string:isbn>")
+@app.route("/<isbn>/<year>")
+def select_book(isbn, year):
+	db.execute("INSERT into favorites (isbn, user_id) VALUES (:isbn, :id)", 
+		{ "isbn": isbn, "id": db.userSession})
+	selected = db.execute("SELECT title from books WHERE isbn=:isbn", { "isbn": isbn}).fetchone()
+	books = db.execute("SELECT * from books WHERE year=:year", {"year":year})
+	db.commit()
+	return render_template("listBooks.html", year=year, books=books, msg=selected)
+	# db.execute("INSERT into users (username, password, salt) VALUES (:username, :password, :salt)",
+	# 	{"username":username, "password":hashed, "salt":salt})
 
 
 
