@@ -115,8 +115,12 @@ def select_book(isbn, year):
 	books = db.execute("SELECT * from books WHERE year=:year", {"year":year})
 	db.commit()
 	return render_template("listBooks.html", year=year, books=books, msg=selected)
-	# db.execute("INSERT into users (username, password, salt) VALUES (:username, :password, :salt)",
-	# 	{"username":username, "password":hashed, "salt":salt})
+
+@app.route("/listFavorites")
+def list_favorites():
+	favs = db.execute("SELECT DISTINCT b.author, b.title FROM favorites as f LEFT JOIN books as b ON f.isbn = b.isbn WHERE f.user_id=:user_id",
+		{"user_id":db.userSession})
+	return render_template("listFavorites.html", username=db.userSession, favs=favs)
 
 
 
