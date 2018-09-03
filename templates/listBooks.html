@@ -8,21 +8,16 @@
     {% if msg %}
     <h3>Added {{ msg }} to favorites</h3>
     {% endif %}
-    <h1>Books from {{ year }} </h1>
+    <h1>Books  </h1>
 
     <ul>
         {% for book in books %}
             <li>
-                <a href="{{ url_for('select_book', isbn=book.isbn, year=year) }}">
+                <a href="{{ url_for('book', isbn=book.isbn) }}">
                     {{ book.title }} - {{ book.author }}
                 </a>
             </li>
         {% endfor %}
     </ul>
-    <form action="{{ url_for('logout')}}">
-        <div class="form-group">
-            <button class="btn btn-primary">Logout</button>
-        </div>
-    <form>
 
 {% endblock %}

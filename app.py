@@ -1,12 +1,15 @@
 import os
 import hashlib
 import uuid
+import requests
 
 from flask import Flask, session, render_template, request
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from User import User
+from Ratings import Ratings
+from keys import keys
 
 
 app = Flask(__name__)
@@ -137,6 +140,23 @@ def list_favorites():
 		{"user_id":db.userSession.user_id})
 	return render_template("listFavorites.html", username=db.userSession.username, favs=favs)
 
+@app.route("/book/<isbn>")
+def book(isbn):
+	found_book = db.execute("SELECT * from books WHERE isbn=:isbn",{"isbn": isbn}).fetchone()
+	res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": keys.KEY, "isbns": isbn})
+	json = res.json()
+	ratings = Ratings()
+	books = json["books"]
+	if books:
+		book = books[0]
+		ratings.avgGR = book['average_rating']
+		ratings.numGR = book['ratings_count']
+	localRatings = db.execute("SELECT count(*) as num, sum(score)/count(*) as avg from local_ratings WHERE isbn =:isbn", {"isbn":isbn}).fetchone()
+	ratings.avgLocal = localRatings.num
+	ratings.numLocal = localRatings.avg
+
+
+	return render_template("book.html",book=found_book, ratings=ratings,msg=res)
 
 
 

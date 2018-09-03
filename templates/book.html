@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Book Details
+{% endblock %}
+
+{% block body %}
+    <h1>Book Details</h1>
+    <p>{{ msg }}</p>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Author</th>
+            <th scope="col">Year</th>
+            <th scope="col">ISBN</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>{{ book.title }}</td>
+            <td>{{ book.author }}</td>
+            <td>{{ book.year }}</td>
+            <td>{{ book.isbn }}</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Num Goodreads Ratings</th>
+            <th scope="col">Avg Goodreads Rating</th>
+            <th scope="col">Num Local Ratings</th>
+            <th scope="col">Avg Local Ratings</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>{{ ratings.numGR }}</td>
+            <td>{{ ratings.avgGR }}</td>
+            <td>{{ ratings.numLocal }}</td>
+            <td>{{ ratings.avgLocal }}</td>
+        </tr>
+        </tbody>
+    </table>
+
+{% endblock %}
