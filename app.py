@@ -36,6 +36,11 @@ def index():
 def login():
  	return render_template("login.html")
 
+@app.route("/logout")
+def logout():
+	db.userSession = None
+	return render_template("logout.html")
+
 @app.route("/register")
 def register():
  	return render_template("register.html")
@@ -63,7 +68,7 @@ def submitRegistration():
 	db.commit()
 	db.userSession = User(username, salt)
 	msg = "logged in as " + username + "db.userSession" + db.userSession
-	return render_template("success.html", message=msg)
+	return render_template("success.html", message=msg, username=db.userSession.username)
 
 @app.route("/submitLogin", methods=["POST"])
 def submitLogin():
@@ -85,7 +90,7 @@ def submitLogin():
 	if hashed_userPassword == hashed_password:
 		msg = "logged in as " + name
 		db.userSession = User(username, salt)
-		return render_template("success.html", message=msg)
+		return render_template("success.html", message=msg, username=db.userSession.username)
 	else:
 		return render_template("error.html", message="invalid username or password")
 
@@ -95,7 +100,7 @@ def searchBooks():
 	if db.userSession == None:
 		return render_template("error.html", message="not logged in")
 	else:
-		return render_template("searchBooks.html")
+		return render_template("searchBooks.html", username=db.userSession.username)
 
 @app.route("/listBooks", methods=["POST"])
 def listBooks(msg = None):
@@ -103,8 +108,17 @@ def listBooks(msg = None):
 		return render_template("error.html", message="not logged in")
 	else:
 		year = request.form.get("year")
-		books = db.execute("SELECT * from books WHERE year=:year", {"year":year})
-		return render_template("listBooks.html", year=year, books=books, msg=msg)
+		isbn = request.form.get("isbn")
+		if isbn != "":
+			books = db.execute("SELECT * from books WHERE isbn=:isbn", {"isbn":isbn})
+		else: 
+			author = "%" + request.form.get("author") + "%"
+			title = "%" + request.form.get("title") + "%"
+			year = "%" + request.form.get("year")
+			books = db.execute("SELECT * from books WHERE UPPER(author) LIKE UPPER(:author) AND UPPER(title) LIKE UPPER(:title) AND year LIKE :year",
+			 {"author": author, "title": title, "year": year})
+
+		return render_template("listBooks.html", books=books, username=db.userSession.username)
 
 
 # @app.route("/select_book/<string:isbn>")
@@ -115,7 +129,7 @@ def select_book(isbn, year):
 	selected = db.execute("SELECT title from books WHERE isbn=:isbn", { "isbn": isbn}).fetchone()
 	books = db.execute("SELECT * from books WHERE year=:year", {"year":year})
 	db.commit()
-	return render_template("listBooks.html", year=year, books=books, msg=selected)
+	return render_template("listBooks.html", year=year, books=books, msg=selected, username=db.userSession.username)
 
 @app.route("/listFavorites")
 def list_favorites():

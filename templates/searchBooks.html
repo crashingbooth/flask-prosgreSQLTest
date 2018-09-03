@@ -5,10 +5,23 @@
 {% endblock %}
 
 {% block body %}
-	<h1>Select Books by Year</h1>
+    <h2>Logged in as {{ username }}</h2>
+	<h1>Search for books</h1>
 	<form action="{{ url_for('listBooks') }}" method="post">
+        <div class="form-group">
+            <input class="form-control" name="author" type="text" placeholder="Author">
+        </div>
+
 		<div class="form-group">
-            <input class="form-control" name="year" type="number" placeholder="Book Year">
+            <input class="form-control" name="title" type="author" placeholder="Title">
+        </div>
+
+        <div class="form-group">
+            <input class="form-control" name="isbn" type="number" placeholder="ISBN">
+        </div>
+
+        <div class="form-group">
+            <input class="form-control" name="year" type="number" placeholder="Publication Year">
         </div>
 
 
