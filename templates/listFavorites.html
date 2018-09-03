@@ -1,11 +1,17 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Found Books
+    Favorites for {{ username }}
 {% endblock %}
 
 {% block body %}
-	<h1>Select to Add to Favorites</h1>
-	
+    <h2>{{ username }}'s favourite books</h2>
+	<ul>
+        {% for book in favs %}
+            <li>        
+              {{ book.author }} - {{ book.title }}
+            </li>
+        {% endfor %}
+    </ul>
 
 {% endblock %}

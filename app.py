@@ -6,6 +6,7 @@ from flask import Flask, session, render_template, request
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
+from User import User
 
 
 app = Flask(__name__)
@@ -60,7 +61,7 @@ def submitRegistration():
 	db.execute("INSERT into users (username, password, salt) VALUES (:username, :password, :salt)",
 		{"username":username, "password":hashed, "salt":salt})
 	db.commit()
-	db.userSession = salt
+	db.userSession = User(username, salt)
 	msg = "logged in as " + username + "db.userSession" + db.userSession
 	return render_template("success.html", message=msg)
 
@@ -83,7 +84,7 @@ def submitLogin():
 
 	if hashed_userPassword == hashed_password:
 		msg = "logged in as " + name
-		db.userSession = salt
+		db.userSession = User(username, salt)
 		return render_template("success.html", message=msg)
 	else:
 		return render_template("error.html", message="invalid username or password")
@@ -110,7 +111,7 @@ def listBooks(msg = None):
 @app.route("/<isbn>/<year>")
 def select_book(isbn, year):
 	db.execute("INSERT into favorites (isbn, user_id) VALUES (:isbn, :id)", 
-		{ "isbn": isbn, "id": db.userSession})
+		{ "isbn": isbn, "id": db.userSession.user_id})
 	selected = db.execute("SELECT title from books WHERE isbn=:isbn", { "isbn": isbn}).fetchone()
 	books = db.execute("SELECT * from books WHERE year=:year", {"year":year})
 	db.commit()
@@ -119,8 +120,8 @@ def select_book(isbn, year):
 @app.route("/listFavorites")
 def list_favorites():
 	favs = db.execute("SELECT DISTINCT b.author, b.title FROM favorites as f LEFT JOIN books as b ON f.isbn = b.isbn WHERE f.user_id=:user_id",
-		{"user_id":db.userSession})
-	return render_template("listFavorites.html", username=db.userSession, favs=favs)
+		{"user_id":db.userSession.user_id})
+	return render_template("listFavorites.html", username=db.userSession.username, favs=favs)
 
 
 
