@@ -46,4 +46,26 @@
         </tbody>
     </table>
 
+    {% if not alreadyRated %}
+    <form action="{{ url_for('submit_rating', isbn=book.isbn) }}" method="post">
+        <div class="form-group">
+            <input class="form-control" name="score" type="number" placeholder="score from 0 to 5">
+        </div>
+
+        <div class="form-group">
+            <label for="review"></label>
+            <textarea class="form-control" name="review" type="author" id="review" placeholder="Title"></textarea>
+        </div>
+
+    
+
+        <div class="form-group">
+            <button class="btn btn-primary">Submit</button>
+        </div>
+    <form>
+    {% else %}
+    <h4>User rating: {{ userRating.score }}</h4>
+    <p>{{ userRating.review }}</p>
+    {% endif %}
+
 {% endblock %}

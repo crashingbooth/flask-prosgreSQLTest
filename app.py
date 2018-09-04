@@ -155,8 +155,26 @@ def book(isbn):
 	ratings.avgLocal = localRatings.num
 	ratings.numLocal = localRatings.avg
 
+	userRating = db.execute("SELECT score, review from local_ratings WHERE isbn=:isbn AND user_id=:user_id",{"isbn":isbn, "user_id": db.userSession.user_id } ).fetchone()
+	
+	if not userRating:
+		alreadyRated = False
+	else:
+		alreadyRated = True
 
-	return render_template("book.html",book=found_book, ratings=ratings,msg=res)
+	return render_template("book.html",book=found_book, ratings=ratings, msg=res, alreadyRated=alreadyRated, userRating=userRating)
+
+@app.route("/book/ratings/<isbn>", methods=["POST"])
+def submit_rating(isbn):
+	userScore = request.form.get("score")
+	userReview = request.form.get("review")
+	intScore = int(userScore)
+	if not intScore:
+		return render_template("error.html", message="invalid score")
+	db.execute("INSERT INTO local_ratings (user_id, isbn, score, review) VALUES (:user_id, :isbn, :score, :review)",
+	 { "user_id": db.userSession.user_id, "isbn":isbn, "score":userScore, "review":userReview })
+	db.commit()
+	return render_template("add_rating.html")
 
 
 
