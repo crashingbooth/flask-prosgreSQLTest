@@ -5,6 +5,8 @@ import requests
 
 from flask import Flask, render_template, jsonify, request
 from models import *
+from keys import keys
+from Ratings import AllRatings
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
@@ -130,45 +132,30 @@ def listBooks(msg = None):
 			year = "%" + request.form.get("year")
 			books = Book.query.filter(Book.author.ilike(author)).filter(Book.title.ilike(title)).filter(Book.year.like(year)).all()
 
-			# books = db.execute("SELECT * from books WHERE UPPER(author) LIKE UPPER(:author) AND UPPER(title) LIKE UPPER(:title) AND year LIKE :year",
-			 # {"author": author, "title": title, "year": year})
-
 		return render_template("listBooks.html", books=books, username=db.userSession.username)
-
-
-# @app.route("/select_book/<string:isbn>")
-@app.route("/<isbn>/<year>")
-def select_book(isbn, year):
-	db.execute("INSERT into favorites (isbn, user_id) VALUES (:isbn, :id)", 
-		{ "isbn": isbn, "id": db.userSession.user_id})
-	selected = db.execute("SELECT title from books WHERE isbn=:isbn", { "isbn": isbn}).fetchone()
-	books = db.execute("SELECT * from books WHERE year=:year", {"year":year})
-	db.commit()
-	return render_template("listBooks.html", year=year, books=books, msg=selected, username=db.userSession.username)
-
-@app.route("/listFavorites")
-def list_favorites():
-	favs = db.execute("SELECT DISTINCT b.author, b.title FROM favorites as f LEFT JOIN books as b ON f.isbn = b.isbn WHERE f.user_id=:user_id",
-		{"user_id":db.userSession.user_id})
-	return render_template("listFavorites.html", username=db.userSession.username, favs=favs)
 
 @app.route("/book/<isbn>")
 def book(isbn):
-	found_book = db.execute("SELECT * from books WHERE isbn=:isbn",{"isbn": isbn}).fetchone()
+	found_book = Book.query.get(isbn)
+	# found_book = db.execute("SELECT * from books WHERE isbn=:isbn",{"isbn": isbn}).fetchone()
 	res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": keys.KEY, "isbns": isbn})
 	json = res.json()
-	ratings = Ratings()
+	ratings = AllRatings()
 	books = json["books"]
 	if books:
 		book = books[0]
 		ratings.avgGR = book['average_rating']
 		ratings.numGR = book['ratings_count']
-	localRatings = db.execute("SELECT count(*) as num, sum(score)/count(*) as avg from local_ratings WHERE isbn =:isbn", {"isbn":isbn}).fetchone()
-	ratings.avgLocal = localRatings.num
-	ratings.numLocal = localRatings.avg
-
-	userRating = db.execute("SELECT score, review from local_ratings WHERE isbn=:isbn AND user_id=:user_id",{"isbn":isbn, "user_id": db.userSession.user_id } ).fetchone()
-	
+	localRatings = Rating.query.filter_by(isbn=isbn).all()
+	localCount = len(localRatings)
+	localSum = sum([x.score for x in localRatings])
+	# localRatings = db.execute("SELECT count(*) as num, sum(score)/count(*) as avg from local_ratings WHERE isbn =:isbn", {"isbn":isbn}).fetchone()
+	if localCount != 0:
+		ratings.avgLocal = localSum / localCount
+	ratings.numLocal = localCount
+	print("HERE")
+	# userRating = db.execute("SELECT score, review from local_ratings WHERE isbn=:isbn AND user_id=:user_id",{"isbn":isbn, "user_id": db.userSession.user_id } ).fetchone()
+	userRating = Rating.query.filter_by(user_id=db.userSession.id).filter_by(isbn=isbn).first()
 	if not userRating:
 		alreadyRated = False
 	else:
