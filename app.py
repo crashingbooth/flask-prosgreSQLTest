@@ -123,13 +123,15 @@ def listBooks(msg = None):
 		year = request.form.get("year")
 		isbn = request.form.get("isbn")
 		if isbn != "":
-			books = db.execute("SELECT * from books WHERE isbn=:isbn", {"isbn":isbn})
+			books = Book.query.filter_by(isbn=isbn).first()
 		else: 
 			author = "%" + request.form.get("author") + "%"
 			title = "%" + request.form.get("title") + "%"
 			year = "%" + request.form.get("year")
-			books = db.execute("SELECT * from books WHERE UPPER(author) LIKE UPPER(:author) AND UPPER(title) LIKE UPPER(:title) AND year LIKE :year",
-			 {"author": author, "title": title, "year": year})
+			books = Book.query.filter(Book.author.ilike(author)).filter(Book.title.ilike(title)).filter(Book.year.like(year)).all()
+
+			# books = db.execute("SELECT * from books WHERE UPPER(author) LIKE UPPER(:author) AND UPPER(title) LIKE UPPER(:title) AND year LIKE :year",
+			 # {"author": author, "title": title, "year": year})
 
 		return render_template("listBooks.html", books=books, username=db.userSession.username)
 
