@@ -11,12 +11,13 @@ class Book(db.Model):
 
 class User(db.Model):
 	__tablename__ = "users"
-	user_id = db.Column(db.String, primary_key=True)
+	id = db.Column(db.String, primary_key=True)
 	password = db.Column(db.String, nullable=False)
 
 class Rating(db.Model):
 	__tablename__ = "local_ratings"
+	id = db.Column(db.String, primary_key=True)
 	isbn = db.Column(db.String, db.ForeignKey("books.isnb"), nullable=False)
-	user_id = db.Column(db.String, db.ForeignKey("user.user_id"), nullable=False)
+	user_id = db.Column(db.String, db.ForeignKey("user.id"), nullable=False)
 	review = db.Column(db.String, nullable=False)
 	score = db.Column(db.Integer, nullable=False)

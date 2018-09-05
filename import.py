@@ -1,8 +1,6 @@
 # import csv
 # import os
 
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import scoped_session, sessionmaker
 
 # engine = create_engine(os.getenv("DATABASE_URL"))
 # db = scoped_session(sessionmaker(bind=engine))
@@ -27,6 +25,8 @@ import csv
 import os
 
 from flask import Flask, render_template, request
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 from models import *
 
 app = Flask(__name__)
@@ -35,7 +35,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 def main():
-    f = open("flights.csv")
+    f = open("books.csv")
     reader = csv.reader(f)
     for isbn, title, author, year in reader:
         book = Book(isbn=isbn, title=title, author=author, year=year)
