@@ -3,38 +3,48 @@ import hashlib
 import uuid
 import requests
 
-from flask import Flask, session, render_template, request
-from flask_session import Session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-from User import User
-from Ratings import Ratings
-from keys import keys
-
+from flask import Flask, render_template, jsonify, request
+from models import *
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db.init_app(app)
 
-# Check for environment variable
-if not os.getenv("DATABASE_URL"):
-    raise RuntimeError("DATABASE_URL is not set")
 
-# Configure session to use filesystem
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
+# from flask import Flask, session, render_template, request
+# from flask_session import Session
+# from sqlalchemy import create_engine
+# from sqlalchemy.orm import scoped_session, sessionmaker
+# from keys import keys
 
-# Set up database
-engine = create_engine(os.getenv("DATABASE_URL"))
-db = scoped_session(sessionmaker(bind=engine))
-db.userSession = None
+# from models import *
+
+
+# app = Flask(__name__)
+
+# # Check for environment variable
+# if not os.getenv("DATABASE_URL"):
+#     raise RuntimeError("DATABASE_URL is not set")
+
+# # Configure session to use filesystem
+# app.config["SESSION_PERMANENT"] = False
+# # app.config["SESSION_TYPE"] = "filesystem"
+# app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# db.init_app(app)
+# # Session(app)
+
+# # Set up database
+# engine = create_engine(os.getenv("DATABASE_URL"))
+# db = scoped_session(sessionmaker(bind=engine))
+# db.userSession = None
 
 
 @app.route("/")
-def index():
-	
+def index():	
 	return render_template("login.html")
 	# return render_template("register.html")
-    # return "Project 1: TODO"
+
 @app.route("/login")
 def login():
  	return render_template("login.html")
@@ -54,45 +64,45 @@ def submitRegistration():
 	password = request.form.get("password")
 	passwordRepeat = request.form.get("password-repeat")
 
-	identical_username = db.execute("SELECT username FROM users where username =:username", {"username": username}).fetchall()
+	identical_username = User.query.filter_by(username=username).all()
 	if identical_username:
 		return render_template("error.html", message="username already in use")
 	if not password == passwordRepeat:
 		return render_template("error.html", message="passwords do not match")
 
 
-	salt = uuid.uuid4().hex
-	saltedPassword = salt+password
+	id = uuid.uuid4().hex
+	saltedPassword = id+password
 	saltedPassword =saltedPassword.encode('utf-8')
 	hashed = hashlib.sha256(saltedPassword).hexdigest()
 	hashed = str(hashed)
-	db.execute("INSERT into users (username, password, salt) VALUES (:username, :password, :salt)",
-		{"username":username, "password":hashed, "salt":salt})
-	db.commit()
-	db.userSession = User(username, salt)
-	msg = "logged in as " + username + "db.userSession" + db.userSession
-	return render_template("success.html", message=msg, username=db.userSession.username)
+	newUser = User(username=username, id=id, password=hashed)
+	db.session.add(newUser)
+	db.session.commit()
+	print(f"name: {newUser.username} id: {newUser.id}, password: {newUser.password}")
+	db.userSession = newUser
+	msg = "logged in as " + username + "db.userSession" + db.userSession.username
+	return render_template("success.html", message=msg, username=username)
 
 @app.route("/submitLogin", methods=["POST"])
 def submitLogin():
 	username = request.form.get("username")
 	password = request.form.get("password")
 
-
-	found_user = db.execute("SELECT username, salt, password FROM users where username =:username", {"username": username}).fetchone()
+	found_user = User.query.filter_by(username=username).first()
 	if not found_user:
 		return render_template("error.html", message="no user by that name")
 
 	name = found_user.username
 	hashed_password = found_user.password
-	salt = found_user.salt
+	salt = found_user.id
 	
 	salted_userPassword = (salt+password).encode('utf-8')
 	hashed_userPassword = str(hashlib.sha256(salted_userPassword).hexdigest())
 
 	if hashed_userPassword == hashed_password:
 		msg = "logged in as " + name
-		db.userSession = User(username, salt)
+		db.userSession = found_user
 		return render_template("success.html", message=msg, username=db.userSession.username)
 	else:
 		return render_template("error.html", message="invalid username or password")
