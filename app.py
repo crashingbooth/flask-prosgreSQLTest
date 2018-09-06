@@ -149,12 +149,12 @@ def book(isbn):
 	localRatings = Rating.query.filter_by(isbn=isbn).all()
 	localCount = len(localRatings)
 	localSum = sum([x.score for x in localRatings])
-	# localRatings = db.execute("SELECT count(*) as num, sum(score)/count(*) as avg from local_ratings WHERE isbn =:isbn", {"isbn":isbn}).fetchone()
+	
 	if localCount != 0:
 		ratings.avgLocal = localSum / localCount
 	ratings.numLocal = localCount
-	print("HERE")
-	# userRating = db.execute("SELECT score, review from local_ratings WHERE isbn=:isbn AND user_id=:user_id",{"isbn":isbn, "user_id": db.userSession.user_id } ).fetchone()
+
+	
 	userRating = Rating.query.filter_by(user_id=db.userSession.id).filter_by(isbn=isbn).first()
 	if not userRating:
 		alreadyRated = False
@@ -170,9 +170,10 @@ def submit_rating(isbn):
 	intScore = int(userScore)
 	if not intScore:
 		return render_template("error.html", message="invalid score")
-	db.execute("INSERT INTO local_ratings (user_id, isbn, score, review) VALUES (:user_id, :isbn, :score, :review)",
-	 { "user_id": db.userSession.user_id, "isbn":isbn, "score":userScore, "review":userReview })
-	db.commit()
+	db.session.add(Rating(id=str(uuid.uuid4().hex), score=userScore, review=userReview, isbn=isbn, user_id=db.userSession.id))
+	# db.execute("INSERT INTO local_ratings (user_id, isbn, score, review) VALUES (:user_id, :isbn, :score, :review)",
+	#  { "user_id": db.userSession.user_id, "isbn":isbn, "score":userScore, "review":userReview })
+	db.session.commit()
 	return render_template("add_rating.html")
 
 

@@ -6,11 +6,7 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
         {% if username %}
             <h3>Logged in as {{ username }}</h3>
-        <!--         <form action="{{ url_for('logout')}}">
-                    <div class="form-group">
-                        <button class="btn btn-primary">Logout</button>
-                    </div>
-                <form> -->
+            <a href="{{ url_for('logout')}}">Logout</a>
         {% endif %} 
     </head>
     <body>

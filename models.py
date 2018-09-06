@@ -18,7 +18,7 @@ class User(db.Model):
 class Rating(db.Model):
 	__tablename__ = "local_ratings"
 	id = db.Column(db.String, primary_key=True)
-	isbn = db.Column(db.String, db.ForeignKey("books.isnb"), nullable=False)
-	user_id = db.Column(db.String, db.ForeignKey("user.id"), nullable=False)
+	isbn = db.Column(db.String, db.ForeignKey("books.isbn"), nullable=False)
+	user_id = db.Column(db.String, db.ForeignKey("users.id"), nullable=False)
 	review = db.Column(db.String, nullable=False)
 	score = db.Column(db.Integer, nullable=False)
