@@ -137,7 +137,6 @@ def listBooks(msg = None):
 @app.route("/book/<isbn>")
 def book(isbn):
 	found_book = Book.query.get(isbn)
-	# found_book = db.execute("SELECT * from books WHERE isbn=:isbn",{"isbn": isbn}).fetchone()
 	res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": keys.KEY, "isbns": isbn})
 	json = res.json()
 	ratings = AllRatings()
@@ -177,7 +176,11 @@ def submit_rating(isbn):
 
 @app.route("/reviews")
 def list_reviews():
-	reviews = Rating.query.filter_by(user_id= db.userSession.id).all()
-	return render_template("listReviews.html", username=db.userSession.username, review=reviews)
+	# j = join(local_ratings, books, local_ratings.isbn==books.isbn)
+	# reviews = db.session.query(Book.title, Rating.score, Rating.review).join(Book)filter(Rating.user_id= db.userSession.id).all()
+	# for r in reviews:
+	# 	print(r.score)
+	reviews = Rating.query.filter_by(user_id=db.userSession.id).all()
+	return render_template("listReviews.html", username=db.userSession.username, reviews=reviews)
 
 

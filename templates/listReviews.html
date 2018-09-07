@@ -15,10 +15,10 @@
         </tr>
         </thead>
         <tbody>
-         {% for book in ratings %}
+         {% for book in reviews %}
         <tr>
-            <td>{{ reviews.score }}</td>
-            <td>{{ reviews.review }}</td>
+            <td>{{ book.score }}</td>
+            <td>{{ book.review }}</td>
         </tr>
          {% endfor %}
         </tbody>
