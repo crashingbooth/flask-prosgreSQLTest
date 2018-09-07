@@ -171,10 +171,13 @@ def submit_rating(isbn):
 	if not intScore:
 		return render_template("error.html", message="invalid score")
 	db.session.add(Rating(id=str(uuid.uuid4().hex), score=userScore, review=userReview, isbn=isbn, user_id=db.userSession.id))
-	# db.execute("INSERT INTO local_ratings (user_id, isbn, score, review) VALUES (:user_id, :isbn, :score, :review)",
-	#  { "user_id": db.userSession.user_id, "isbn":isbn, "score":userScore, "review":userReview })
 	db.session.commit()
 	return render_template("add_rating.html")
 
+
+@app.route("/reviews")
+def list_reviews():
+	reviews = Rating.query.filter_by(user_id= db.userSession.id).all()
+	return render_template("listReviews.html", username=db.userSession.username, review=reviews)
 
 

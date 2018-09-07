@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Reviews for {{ username }}
+{% endblock %}
+
+{% block body %}
+    <h2>{{ username }}'s favourite reviews</h2>
+
+        <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Score</th>
+            <th scope="col">Review</th>
+        </tr>
+        </thead>
+        <tbody>
+         {% for book in ratings %}
+        <tr>
+            <td>{{ reviews.score }}</td>
+            <td>{{ reviews.review }}</td>
+        </tr>
+         {% endfor %}
+        </tbody>
+    </table>
+        
+
+{% endblock %}
