@@ -22,3 +22,4 @@ class Rating(db.Model):
 	user_id = db.Column(db.String, db.ForeignKey("users.id"), nullable=False)
 	review = db.Column(db.String, nullable=False)
 	score = db.Column(db.Integer, nullable=False)
+	book = db.relationship(Book, back_ref='users')

@@ -180,7 +180,9 @@ def list_reviews():
 	# reviews = db.session.query(Book.title, Rating.score, Rating.review).join(Book)filter(Rating.user_id= db.userSession.id).all()
 	# for r in reviews:
 	# 	print(r.score)
-	reviews = Rating.query.filter_by(user_id=db.userSession.id).all()
+
+	reviews = db.execute("SELECT b.title, b.author, r.score, r.review from local_ratings as r WHERE r.user_id = :user_id", { "user_id": db.userSession.id}).fetchall()
+	# reviews = Rating.query.filter_by(user_id=db.userSession.id).all()
 	return render_template("listReviews.html", username=db.userSession.username, reviews=reviews)
 
 
